@@ -9,12 +9,17 @@ __pycache__/
 # CSV extension
 *.csv 
 
+# txt extension
+*.txt
+
 # Distribution / packaging
 .Python
 build/
 develop-eggs/
 dist/
 downloads/
+images/
+videos/
 eggs/
 .eggs/
 lib/
