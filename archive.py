@@ -13,6 +13,7 @@ from datetime import datetime
 from requests_oauthlib import OAuth1Session
 from tqdm import tqdm
 
+
 def new_oauth(yaml_path):
     '''
     Return the consumer and oauth tokens with three-legged OAuth process and
@@ -68,6 +69,7 @@ def new_oauth(yaml_path):
 
     return tokens
 
+
 def get_token():
     # Get token
     yaml_path = os.path.expanduser('~') + '/.tumblr'
@@ -83,6 +85,7 @@ def get_token():
     assert client.likes()["liked_count"] > 1
 
     return client
+
 
 def save(url, content_type, index, tags):
     '''A saver funtion for downloading content based on URL'''
@@ -105,12 +108,13 @@ def save(url, content_type, index, tags):
     else:
         try:
             img_data = requests.get(url).content
-            path = os.path.join('images', str(5613) +tags + '.png')
+            path = os.path.join('images', str(index) + tags + '.png')
             with open(path, 'wb') as handler:
                 handler.write(img_data)
         except:
             with open("failed_urls.txt","a") as file:
                 file.write(url + ' Index:[' + index +']' + "\n")
+
 
 def find_first_post(client):
     now = int(time.time())
@@ -137,6 +141,7 @@ def find_first_post(client):
 
 
 def api_calls_for_content(client, first_post):
+# TODO: If posts are already retrieved, only retrieve from last known one on
     checkpoint = {"caused_error_url" : [],
               "not_found_contenttype": [],
               "offsets" : [first_post],
@@ -227,3 +232,4 @@ if os.path.isfile('checkpoint.p'):
     download(posts, int(start))
 else:
     download(posts)
+# TODO: Add a function to then try failed URLs again
