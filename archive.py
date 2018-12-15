@@ -88,7 +88,8 @@ def get_token():
 
 
 def save(url, content_type, index, tags):
-    '''A saver funtion for downloading content based on URL'''
+    # A saver funtion for downloading content based on URL
+
     try:
         os.mkdir('tumblr_videos')
     except FileExistsError:
@@ -103,26 +104,26 @@ def save(url, content_type, index, tags):
             path = os.path.join('videos', str(index) + tags + '.mp4')
             urllib.request.urlretrieve(url, path)
         except:
-            with open("failed_urls.txt","a") as file:
+            with open("failed_urls.txt", "a") as file:
                 file.write(url + ' Index:[' + index + ']' + "\n")
     else:
         try:
             img_data = requests.get(url).content
-            path = os.path.join('images', str(index) + tags + '.png')
+            path = os.path.join('images', str(index) + tags + '.jpg')
             with open(path, 'wb') as handler:
                 handler.write(img_data)
         except:
             with open("failed_urls.txt","a") as file:
-                file.write(url + ' Index:[' + index +']' + "\n")
+                file.write(url + ' Index:[' + index + ']' + "\n")
 
 
 def find_first_post(client):
     now = int(time.time())
     past = time.mktime(datetime.strptime("01/02/2007", "%d/%m/%Y").timetuple())
     timestamp = now - (now - past)/2
-    posts = client.likes(before=now,limit=51)['liked_posts']
-    while len(posts) in [0,51]:
-        posts = client.likes(before=int(timestamp),limit=51)['liked_posts']
+    posts = client.likes(before=now, limit=51)['liked_posts']
+    while len(posts) in [0, 51]:
+        posts = client.likes(before=int(timestamp), limit=51)['liked_posts']
         if len(posts) == 0:
             past = timestamp
             timestamp = now - (now - past)/2
@@ -130,7 +131,7 @@ def find_first_post(client):
             now = timestamp
             timestamp = now - (now - past)/2
     print('Starting with your first post at {}'.format(datetime.utcfromtimestamp(timestamp).strftime('%Y %m %d %H:%M')))
-    posts = client.likes(before=int(timestamp),limit=51)['liked_posts']
+    posts = client.likes(before=int(timestamp), limit=51)['liked_posts']
     try:
         first_post_timestamp = min([posts[k]['liked_timestamp'] for k in range(len(posts))])
     except ValueError:
@@ -141,20 +142,20 @@ def find_first_post(client):
 
 
 def api_calls_for_content(client, first_post):
-# TODO: If posts are already retrieved, only retrieve from last known one on
-    checkpoint = {"caused_error_url" : [],
-              "not_found_contenttype": [],
-              "offsets" : [first_post],
-              "name_dict" : {},
-              "num_post" : 0,
-              "current_api_call" : 0 }
+    # TODO: If posts are already retrieved, only retrieve from last known one on
+    checkpoint = {"caused_error_url": [],
+                  "not_found_contenttype": [],
+                  "offsets": [first_post],
+                  "name_dict": {},
+                  "num_post": 0,
+                  "current_api_call": 0}
     posts = []
     try:
         likes = client.likes()["liked_count"]
         iterations = int(likes / 51 + 1)
         for _ in tqdm(range(iterations)):
             # Iterate over batches of size 49 to create as little requests as possible
-            request = client.likes(after=checkpoint["offsets"][-1],limit=51)
+            request = client.likes(after=checkpoint["offsets"][-1], limit=51)
             new_offset = max([request["liked_posts"][k]['liked_timestamp'] for k in range(len(request["liked_posts"]))])
             checkpoint["offsets"].append(new_offset)
             posts.extend(request["liked_posts"])
@@ -171,7 +172,7 @@ def download(posts, start=0):
     try:
         for index, post in enumerate(tqdm(posts[start:])):
             index += start
-            if len(post) >=1:
+            if len(post) >= 1:
                 content_type = post['type']
                 tags = "_".join(post['tags'])
                 index = str(index)
@@ -189,47 +190,50 @@ def download(posts, start=0):
                     # Get the body as an HTML style string. Use Regex to extract photo URLs
                     # If only one photo, download, otherwise iterate over them an download
                     content = post["body"]
-                    url_s = re.findall(r'src="(http[s]:[\S]*media\.tumblr\.com[\S]*)"',content)
+                    url_s = re.findall(r'src="(http[s]:[\S]*media\.tumblr\.com[\S]*)"', content)
                     if len(url_s) == 1:
-                        save(url_s[0],content_type,index, tags)
+                        save(url_s[0], content_type, index, tags)
                     else:
                         index += "_{}"
                         for j in range(len(url_s)):
-                            save(url_s[j],content_type, index.format(j), tags)
+                            save(url_s[j], content_type, index.format(j), tags)
                 elif content_type == "video":
                     # Download the video file
                     try:
                         url_s = post["video_url"]
-                        save(url_s, content_type,index, tags)
+                        save(url_s, content_type, index, tags)
                     except KeyError:
                         pass
                 else:
                     pass
     finally:
-        pickle.dump(index, open('checkpoint.p','wb'))
+        pickle.dump(index, open('checkpoint.p', 'wb'))
 
 
-yaml_path = os.path.expanduser('~') + '/.tumblr'
-try:
+if __name__ == '__main__':
+    yaml_path = os.path.expanduser('~') + '/.tumblr'
+    try:
+        client = get_token()
+    except AssertionError:
+        new_oauth(yaml_path)
     client = get_token()
-except AssertionError:
-    new_oauth(yaml_path)
-client = get_token()
-print("Getting an overview...\n")
-if os.path.isfile('first_timestamp.p'):
-    first_post = pickle.load(open('first_timestamp.p','rb'))
-else:
-    first_post = find_first_post(client)
-print('Gently asking Tumblr to tell what you liked. \n')
-if os.path.isfile('posts.p'):
-    posts = pickle.load(open('posts.p','rb'))
-else:
-    posts = api_calls_for_content(client, first_post)
-print("Start downloading. Each file gets a number and its tags as a name.\n") 
-print("A file (failed_urls.txt) might be written with stuff that did not work. Download it yourself later. Most videos are blocked though.") 
-if os.path.isfile('checkpoint.p'):
-    start = pickle.load(open('checkpoint.p','rb'))
-    download(posts, int(start))
-else:
-    download(posts)
-# TODO: Add a function to then try failed URLs again
+    print("Getting an overview...")
+    if os.path.isfile('first_timestamp.p'):
+        first_post = pickle.load(open('first_timestamp.p', 'rb'))
+    else:
+        first_post = find_first_post(client)
+    print('Gently asking Tumblr to tell what you liked.')
+    if os.path.isfile('posts.p'):
+        posts = pickle.load(open('posts.p', 'rb'))
+    else:
+        posts = api_calls_for_content(client, first_post)
+    print("Start downloading. Each file gets a number and its tags as a name.\n")
+    print("A file (failed_urls.txt) might be written with stuff that did not work. "
+          "Download it yourself later. Don't be surprised to see many video URLs. Many videos with adult content were "
+          "already removed")
+    if os.path.isfile('checkpoint.p'):
+        start = pickle.load(open('checkpoint.p', 'rb'))
+        download(posts, int(start))
+    else:
+        download(posts)
+    # TODO: Add a function to then try failed URLs again
