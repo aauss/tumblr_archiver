@@ -88,7 +88,7 @@ def get_token():
 
 
 def save(url, content_type, index, tags):
-    # A saver funtion for downloading content based on URL
+    # A saver function for downloading content based on URL
 
     try:
         os.mkdir('tumblr_videos')
@@ -214,10 +214,10 @@ if __name__ == '__main__':
     yaml_path = os.path.expanduser('~') + '/.tumblr'
     try:
         client = get_token()
-    except AssertionError:
+    except (AssertionError, FileNotFoundError):
         new_oauth(yaml_path)
     client = get_token()
-    print("Getting an overview...")
+    print("Getting an overview...\n")
     if os.path.isfile('first_timestamp.p'):
         first_post = pickle.load(open('first_timestamp.p', 'rb'))
     else:
@@ -227,10 +227,9 @@ if __name__ == '__main__':
         posts = pickle.load(open('posts.p', 'rb'))
     else:
         posts = api_calls_for_content(client, first_post)
-    print("Start downloading. Each file gets a number and its tags as a name.\n")
+    print("Start downloading. Each file gets a number and its tags as a name.")
     print("A file (failed_urls.txt) might be written with stuff that did not work. "
-          "Download it yourself later. Don't be surprised to see many video URLs. Many videos with adult content were "
-          "already removed")
+          "Download it yourself later. Don't be surprised to find many videos blocked though.")
     if os.path.isfile('checkpoint.p'):
         start = pickle.load(open('checkpoint.p', 'rb'))
         download(posts, int(start))
