@@ -171,6 +171,7 @@ def download(posts, start=0):
     index = 0
     try:
         for index, post in enumerate(tqdm(posts[start:])):
+            time.sleep(3)
             index += start
             if len(post) >= 1:
                 content_type = post['type']
