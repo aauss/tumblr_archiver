@@ -212,7 +212,7 @@ def download(posts, start=0):
 yaml_path = os.path.expanduser('~') + '/.tumblr'
 try:
     client = get_token()
-except AssertionError:
+except (AssertionError, FileNotFoundError):
     new_oauth(yaml_path)
 client = get_token()
 print("Getting an overview...\n")
