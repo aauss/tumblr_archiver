@@ -52,7 +52,7 @@ This guide is for Windows, Mac, and Linux user.
 
 1. Plug in your laptop charger, and make sure you have a stable internet connection, and that the laptop won't auto shutdown, sleep or screensaver. This program will run for a while and it's a faff to restart. 
 
-2. Where the blinky cursor is, type `python archive.py `. The first bit tells your computer to run Python, the second bit tells Python to run the archiver.
+2. Where the blinky cursor is, type `pip install -r requirements.txt`. This will install some other stuff to make the archiver finally work. Then, type `python archive.py`. The first bit tells your computer to run Python, the second bit tells Python to run the archiver.
 
 3. Your command prompt will start spitting fancy sentences onto the screen. Read it to understand what is currently happening! You can do other stuff while you wait, just leave the black command prompt box open and running.
 
