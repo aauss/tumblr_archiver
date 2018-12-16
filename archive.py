@@ -152,7 +152,6 @@ def find_first_post(client):
 
 
 def api_calls_for_content(client, first_post):
-    # TODO: If posts are already retrieved, only retrieve from last known one on
     checkpoint = {"caused_error_url": [],
                   "not_found_contenttype": [],
                   "offsets": [first_post],
@@ -176,13 +175,19 @@ def api_calls_for_content(client, first_post):
     return posts
 
 
-def download(posts, start=0):
+def download(posts, failed, start=0):
     # Download likes
-    index = 0
+    if not failed:
+        index = 0
+    else:
+        index = failed
     try:
         for index, post in enumerate(tqdm(posts[start:])):
             time.sleep(3)
-            index += start
+            if not failed:
+                index += start
+            else:
+                index = failed[index]
             if len(post) >= 1:
                 content_type = post['type']
                 tags = "_".join(post['tags'])
@@ -243,7 +248,6 @@ if __name__ == '__main__':
           "Download it yourself later. Don't be surprised to find many videos blocked though.")
     if os.path.isfile('checkpoint.p'):
         start = pickle.load(open('checkpoint.p', 'rb'))
-        download(posts, int(start))
+        download(posts, int(start), failed=False)
     else:
         download(posts)
-    # TODO: Add a function to then try failed URLs again
