@@ -218,7 +218,7 @@ def download(posts, failed, start=0):
                     try:
                         url_s = post["video_url"]
                         save(url_s, content_type, index, tags)
-                    except KeyError:
+                    except:
                         pass
                 else:
                     pass
