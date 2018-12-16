@@ -101,7 +101,7 @@ def save(url, content_type, index, tags):
     tags = tags[:150]  # Otherwise name gets to long
     # dirname = os.path.dirname(__file__)
     if content_type == "video":
-        try
+        try:
             path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
             urllib.request.urlretrieve(url, path)
         except:
