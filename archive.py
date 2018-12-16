@@ -251,3 +251,4 @@ if __name__ == '__main__':
         download(posts, int(start), failed=False)
     else:
         download(posts)
+    print('Run: python try_failed_urls.py  ... to retry downloading failed URLs')
