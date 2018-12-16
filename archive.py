@@ -99,9 +99,10 @@ def save(url, content_type, index, tags):
     except FileExistsError:
         pass
     tags = tags[:150]  # Otherwise name gets to long
+    # dirname = os.path.dirname(__file__)
     if content_type == "video":
-        try:
-            path = os.path.join('videos', str(index) + tags + '.mp4')
+        try
+            path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
             urllib.request.urlretrieve(url, path)
         except:
             with open("failed_urls.txt", "a") as file:
@@ -109,7 +110,7 @@ def save(url, content_type, index, tags):
     else:
         try:
             img_data = requests.get(url).content
-            path = os.path.join('images', str(index) + tags + '.jpg')
+            path = os.path.join('tumblr_images', str(index) + tags + '.jpg')
             with open(path, 'wb') as handler:
                 handler.write(img_data)
         except:
