@@ -100,21 +100,30 @@ def save(url, content_type, index, tags):
         pass
     tags = tags[:150]  # Otherwise name gets to long
     # dirname = os.path.dirname(__file__)
+    file_extension = re.compile(r'(?s:.*)(\.[a-z]{3,})')
     if content_type == "video":
         try:
-            path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
+            if file_extension.match(url)[1]:
+                path = os.path.join('tumblr_videos', str(index) + tags + file_extension.match(url)[1])
+            else:
+                path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
             urllib.request.urlretrieve(url, path)
-        except:
+        except Exception as e:
+            print(e.message, e.args)
             with open("failed_urls.txt", "a") as file:
                 file.write(url + ' Index:[' + index + ']' + "\n")
     else:
         try:
+            if file_extension.match(url)[1]:
+                path = os.path.join('tumblr_images', str(index) + tags + file_extension.match(url)[1])
+            else:
+                path = os.path.join('tumblr_images', str(index) + tags + '.jpg')
             img_data = requests.get(url).content
-            path = os.path.join('tumblr_images', str(index) + tags + '.jpg')
             with open(path, 'wb') as handler:
                 handler.write(img_data)
-        except:
-            with open("failed_urls.txt","a") as file:
+        except Exception as e:
+            print(e.message, e.args)
+            with open("failed_urls.txt", "a") as file:
                 file.write(url + ' Index:[' + index + ']' + "\n")
 
 
