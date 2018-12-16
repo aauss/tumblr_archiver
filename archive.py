@@ -103,10 +103,7 @@ def save(url, content_type, index, tags):
     file_extension = re.compile(r'(?s:.*)(\.[a-z]{3,})')
     if content_type == "video":
         try:
-            if file_extension.match(url)[1]:
-                path = os.path.join('tumblr_videos', str(index) + tags + file_extension.match(url)[1])
-            else:
-                path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
+            path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
             urllib.request.urlretrieve(url, path)
         except Exception as e:
             print(e.message, e.args)
