@@ -5,7 +5,7 @@ import os
 import requests
 import urllib.request
 import re
-import pickle 
+import pickle
 import time
 import json
 import sys
@@ -99,27 +99,33 @@ def save(url, content_type, index, tags):
     except FileExistsError:
         pass
     tags = tags[:150]  # Otherwise name gets to long
-    # dirname = os.path.dirname(__file__)
-    file_extension = re.compile(r'(?s:.*)(\.[a-z]{3,})')
+
     if content_type == "video":
         try:
-            path = os.path.join('tumblr_videos', str(index) + tags + '.mp4')
+            path = os.path.join('tumblr_videos', '<' + str(index) + '>' + tags + '.mp4')
             urllib.request.urlretrieve(url, path)
         except Exception as e:
-            print(e.message, e.args)
+            try:
+                print(e.message, e.args)
+            except AttributeError:
+                pass
             with open("failed_urls.txt", "a") as file:
                 file.write(url + ' Index:[' + index + ']' + "\n")
     else:
+        file_extension = re.compile(r'(?s:.*)(\.[a-z]{3,})')
         try:
             if file_extension.match(url)[1]:
-                path = os.path.join('tumblr_images', str(index) + tags + file_extension.match(url)[1])
+                path = os.path.join('tumblr_images', '<' + str(index) + '>' + tags + file_extension.match(url)[1])
             else:
-                path = os.path.join('tumblr_images', str(index) + tags + '.jpg')
+                path = os.path.join('tumblr_images', '<' + str(index) + '>' + tags + '.jpg')
             img_data = requests.get(url).content
             with open(path, 'wb') as handler:
                 handler.write(img_data)
         except Exception as e:
-            print(e.message, e.args)
+            try:
+                print(e.message, e.args)
+            except AttributeError:
+                pass
             with open("failed_urls.txt", "a") as file:
                 file.write(url + ' Index:[' + index + ']' + "\n")
 
@@ -165,26 +171,20 @@ def api_calls_for_content(client, first_post):
             new_offset = max([request["liked_posts"][k]['liked_timestamp'] for k in range(len(request["liked_posts"]))])
             checkpoint["offsets"].append(new_offset)
             posts.extend(request["liked_posts"])
-    except ValueError: 
+    except ValueError:
         with open('posts_with_meta_information.json', 'w') as json_file:
             json.dump(posts, json_file)
         pickle.dump(posts, open("posts.p", 'wb'))
     return posts
 
 
-def download(posts, failed, start=0):
+def download(posts, start=0, disable=False):
     # Download likes
-    if not failed:
-        index = 0
-    else:
-        index = failed
+
     try:
-        for index, post in enumerate(tqdm(posts[start:])):
-            time.sleep(3)
-            if not failed:
-                index += start
-            else:
-                index = failed[index]
+        for index, post in enumerate(tqdm(posts[start:], disable=disable)):
+            time.sleep(4)
+            index += start
             if len(post) >= 1:
                 content_type = post['type']
                 tags = "_".join(post['tags'])
@@ -215,7 +215,11 @@ def download(posts, failed, start=0):
                     try:
                         url_s = post["video_url"]
                         save(url_s, content_type, index, tags)
-                    except:
+                    except Exception as e:
+                        try:
+                            print(e.message)
+                        except AttributeError:
+                            pass
                         pass
                 else:
                     pass
@@ -230,7 +234,7 @@ if __name__ == '__main__':
     except (AssertionError, FileNotFoundError):
         new_oauth(yaml_path)
     client = get_token()
-    print("Getting an overview...\n")
+    print("Getting an overview...")
     if os.path.isfile('first_timestamp.p'):
         first_post = pickle.load(open('first_timestamp.p', 'rb'))
     else:
@@ -245,7 +249,7 @@ if __name__ == '__main__':
           "Download it yourself later. Don't be surprised to find many videos blocked though.")
     if os.path.isfile('checkpoint.p'):
         start = pickle.load(open('checkpoint.p', 'rb'))
-        download(posts, int(start), failed=False)
+        download(posts, int(start))
     else:
         download(posts)
-    print('Run: python try_failed_urls.py  ... to retry downloading failed URLs')
+    print('Run: python try_failed_urls.py to retry downloading failed URLs')
