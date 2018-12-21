@@ -29,6 +29,6 @@ if __name__ == '__main__':
     posts_pickle = pickle.load(open('posts.p', 'rb'))
 
     for index in tqdm(failed):
-        download([posts_pickle[index]], start=0, to_index=index, disable=True)
+        download([posts_pickle[index]], start=0, to_index=index, sleep=6, disable=True)
 
 
