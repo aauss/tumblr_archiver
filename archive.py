@@ -89,7 +89,7 @@ def get_token():
 
 def _check_path(path):
     if '/' in path:
-        return "".join((path[0], path[1:].replace('/', '|')))
+        return path.replace('/', '|')
     else:
         return path
 
@@ -109,8 +109,8 @@ def save(url, content_type, index, tags):
 
     if content_type == "video":
         try:
-            path = os.path.join('tumblr_videos', '<' + str(index) + '>' + tags + '.mp4')
-            urllib.request.urlretrieve(url, _check_path(path))
+            path = os.path.join('tumblr_videos', _check_path('<' + str(index) + '>' + tags + '.mp4'))
+            urllib.request.urlretrieve(url, path)
         except Exception as e:
             try:
                 print(e.message, e.args)
@@ -122,11 +122,11 @@ def save(url, content_type, index, tags):
         file_extension = re.compile(r'(?s:.*)(\.[a-z]{3,})')
         try:
             if file_extension.match(url)[1]:
-                path = os.path.join('tumblr_images', '<' + str(index) + '>' + tags + file_extension.match(url)[1])
+                path = os.path.join('tumblr_images', '<' + _check_path(str(index) + '>' + tags + file_extension.match(url)[1]))
             else:
-                path = os.path.join('tumblr_images', '<' + str(index) + '>' + tags + '.jpg')
+                path = os.path.join('tumblr_images', '<' + _check_path(str(index) + '>' + tags + '.jpg'))
             img_data = requests.get(url).content
-            with open(_check_path(path), 'wb') as handler:
+            with open(path, 'wb') as handler:
                 handler.write(img_data)
         except Exception as e:
             try:
