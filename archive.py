@@ -178,13 +178,14 @@ def api_calls_for_content(client, first_post):
     return posts
 
 
-def download(posts, start=0, disable=False):
+def download(posts, start=0, to_index=0, sleep=4, disable=False):
     # Download likes
 
     try:
         for index, post in enumerate(tqdm(posts[start:], disable=disable)):
-            time.sleep(4)
+            time.sleep(sleep)
             index += start
+            index += to_index
             if len(post) >= 1:
                 content_type = post['type']
                 tags = "_".join(post['tags'])
@@ -224,7 +225,8 @@ def download(posts, start=0, disable=False):
                 else:
                     pass
     finally:
-        pickle.dump(index, open('checkpoint.p', 'wb'))
+        if not disable and index:
+            pickle.dump(index, open('checkpoint.p', 'wb'))
 
 
 if __name__ == '__main__':
