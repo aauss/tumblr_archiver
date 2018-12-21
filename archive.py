@@ -87,6 +87,13 @@ def get_token():
     return client
 
 
+def _check_path(path):
+    if '/' in path:
+        return "".join((path[0], path[1:].replace('/', '|')))
+    else:
+        return path
+
+
 def save(url, content_type, index, tags):
     # A saver function for downloading content based on URL
 
@@ -103,7 +110,7 @@ def save(url, content_type, index, tags):
     if content_type == "video":
         try:
             path = os.path.join('tumblr_videos', '<' + str(index) + '>' + tags + '.mp4')
-            urllib.request.urlretrieve(url, path)
+            urllib.request.urlretrieve(url, _check_path(path))
         except Exception as e:
             try:
                 print(e.message, e.args)
@@ -119,7 +126,7 @@ def save(url, content_type, index, tags):
             else:
                 path = os.path.join('tumblr_images', '<' + str(index) + '>' + tags + '.jpg')
             img_data = requests.get(url).content
-            with open(path, 'wb') as handler:
+            with open(_check_path(path), 'wb') as handler:
                 handler.write(img_data)
         except Exception as e:
             try:
